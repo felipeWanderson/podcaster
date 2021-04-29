@@ -1,4 +1,4 @@
-import {createContext, ReactNode, useState} from 'react';
+import {createContext, ReactNode, useState, useContext } from 'react';
 
 type Episode = {
   title: string;
@@ -12,6 +12,8 @@ type PlayerContextData = {
   episodeList: Episode[];
   currentEpisodeIndex: number;
   isPlaying: boolean;
+  hasNext: boolean;
+  hasPrev: boolean;
   play: (episode: Episode) => void;
   playList: (list: Episode[], index: number) => void;
   setIsplayingState: (state: boolean) => void;
@@ -23,13 +25,14 @@ type PlayerContextData = {
 type PlayerContextProviderProps = {
   children: ReactNode;
 }
-export const PlayerContext = createContext({} as PlayerContextData);
+const PlayerContext = createContext({} as PlayerContextData);
 
 export function PlayerContextProvider({ children }: PlayerContextProviderProps) {
   const [episodeList, setEpisodeList] = useState([]);
   const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-
+  const hasNext = (currentEpisodeIndex + 1) < episodeList.length;
+  const hasPrev = currentEpisodeIndex > 0;
   function play(episode: Episode) {
     setEpisodeList([episode])
     setCurrentEpisodeIndex(0);
@@ -51,15 +54,13 @@ export function PlayerContextProvider({ children }: PlayerContextProviderProps) 
   }
 
   function playNext() {
-    const nextEpisodeIndex = currentEpisodeIndex + 1;
-
-    if (nextEpisodeIndex < episodeList.length) {
+    if (hasNext) {
       setCurrentEpisodeIndex(currentEpisodeIndex + 1); 
     }
   }
 
   function playPrevious() {
-    if (currentEpisodeIndex > 0) {
+    if (hasPrev) {
       setCurrentEpisodeIndex(currentEpisodeIndex - 1);
     }
   }
@@ -75,10 +76,16 @@ export function PlayerContextProvider({ children }: PlayerContextProviderProps) 
         setIsplayingState,
         playList,
         playNext,
-        playPrevious 
+        playPrevious,
+        hasNext,
+        hasPrev 
       }}
     >
       {children}
     </PlayerContext.Provider>
   )
+}
+
+export const usePlayer = () => {
+  return useContext(PlayerContext);
 }
