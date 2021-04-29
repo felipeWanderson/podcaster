@@ -1,4 +1,4 @@
-import {createContext, ReactNode, useState, useContext } from 'react';
+import { createContext, ReactNode, useState, useContext } from 'react';
 
 type Episode = {
   title: string;
@@ -13,6 +13,7 @@ type PlayerContextData = {
   currentEpisodeIndex: number;
   isPlaying: boolean;
   isLooping: boolean;
+  isShuffling: boolean;
   hasNext: boolean;
   hasPrev: boolean;
   play: (episode: Episode) => void;
@@ -20,6 +21,7 @@ type PlayerContextData = {
   setIsplayingState: (state: boolean) => void;
   tooglePlay: () => void;
   toogleLoop: () => void;
+  toogleShuffle: () => void;
   playNext: () => void;
   playPrevious: () => void;
 }
@@ -34,6 +36,7 @@ export function PlayerContextProvider({ children }: PlayerContextProviderProps) 
   const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLooping, setIsLooping] = useState(false);
+  const [isShuffling, setIsShuffling] = useState(false);
   const hasNext = (currentEpisodeIndex + 1) < episodeList.length;
   const hasPrev = currentEpisodeIndex > 0;
   function play(episode: Episode) {
@@ -54,14 +57,22 @@ export function PlayerContextProvider({ children }: PlayerContextProviderProps) 
   function toogleLoop() {
     setIsLooping(!isLooping);
   }
+  function toogleShuffle() {
+    setIsShuffling(!isShuffling);
+  }
 
   function setIsplayingState(state: boolean) {
     setIsPlaying(state);
   }
 
   function playNext() {
-    if (hasNext) {
-      setCurrentEpisodeIndex(currentEpisodeIndex + 1); 
+    if (isShuffling) {
+      const nextRandomEpisodeIndex = Math.floor(
+        Math.random() * episodeList.length
+      );
+      setCurrentEpisodeIndex(nextRandomEpisodeIndex); 
+    } else if (hasNext) {
+      setCurrentEpisodeIndex(currentEpisodeIndex + 1);
     }
   }
 
@@ -72,21 +83,23 @@ export function PlayerContextProvider({ children }: PlayerContextProviderProps) 
   }
 
   return (
-    <PlayerContext.Provider 
-      value={{ 
-        episodeList, 
-        currentEpisodeIndex, 
-        play, 
+    <PlayerContext.Provider
+      value={{
+        episodeList,
+        currentEpisodeIndex,
+        play,
         isPlaying,
-        isLooping, 
+        isLooping,
+        isShuffling,
         tooglePlay,
-        toogleLoop, 
+        toogleLoop,
+        toogleShuffle,
         setIsplayingState,
         playList,
         playNext,
         playPrevious,
         hasNext,
-        hasPrev 
+        hasPrev
       }}
     >
       {children}
