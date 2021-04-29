@@ -60,8 +60,18 @@ export default function Episode({ episode }: EpisodeProps) {
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
+  const response = await fetch('http://localhost:3333/episodes?_limit=2&_sort=published_at&_order=desc');
+  const data = await response.json();
+
+  const paths = data.map(episode => {
+    return {
+      params: {
+        slug: episode.id,
+      }
+    }
+  });
   return { 
-    paths: [],
+    paths,
     fallback: 'blocking'
   }
 }
